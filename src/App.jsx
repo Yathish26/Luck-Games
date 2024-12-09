@@ -3,47 +3,39 @@ import React, { useState, useEffect } from "react";
 function App() {
   const colors = ["red", "blue", "green"];
   const [currentColor, setCurrentColor] = useState("");
-  const [balance, setBalance] = useState(100); // Starting balance
+  const [balance, setBalance] = useState(100);
   const [betAmount, setBetAmount] = useState(0);
   const [predictedColor, setPredictedColor] = useState("");
   const [timer, setTimer] = useState(10);
   const [message, setMessage] = useState("");
   const [betPlaced, setBetPlaced] = useState(false);
 
-  // Change color every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (betPlaced) {
-        const newColor = colors[Math.floor(Math.random() * colors.length)];
-        setCurrentColor(newColor);
-        evaluateBet(newColor);
-      }
-      setTimer(10);
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [betPlaced]);
-
-  // Countdown timer
   useEffect(() => {
     const countdown = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimer((prev) => {
+        if (prev === 1) {
+          const newColor = colors[Math.floor(Math.random() * colors.length)];
+          setCurrentColor(newColor);
+          if (betPlaced) evaluateBet(newColor);
+          return 10;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(countdown);
-  }, []);
+  }, [betPlaced, colors]);
 
-  // Evaluate bet
   const evaluateBet = (newColor) => {
     if (predictedColor === newColor) {
-      setBalance(balance + betAmount * 2); // Add double the bet amount to the balance
+      setBalance(balance + betAmount * 2);
       setMessage(`Congratulations! You won and earned $${betAmount * 2}.`);
     } else {
       setMessage("You lost! Better luck next time.");
     }
     setBetPlaced(false);
-    setPredictedColor(""); // Reset prediction
-    setBetAmount(0); // Reset bet amount
+    setPredictedColor("");
+    setBetAmount(0);
   };
 
   const handleBet = () => {
@@ -52,7 +44,7 @@ function App() {
     } else if (!predictedColor) {
       alert("Please select a color to predict.");
     } else {
-      setBalance(balance - betAmount); // Deduct bet amount immediately
+      setBalance(balance - betAmount);
       setMessage(`Bet placed! You predicted ${predictedColor} with $${betAmount}.`);
       setBetPlaced(true);
     }
@@ -68,7 +60,7 @@ function App() {
           className={`text-2xl font-bold mb-6`}
           style={{ color: currentColor }}
         >
-          Current Color: {currentColor || "?"}
+          Color: {currentColor || "?"}
         </h2>
         <p className="text-gray-500 mb-4">Next color in: {timer} seconds</p>
 
